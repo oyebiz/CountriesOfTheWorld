@@ -3,6 +3,8 @@
     ViewBag.Title = "Index";
 }
 
+<link href="~/Scripts/DataTables-1.12.1/css/jquery.dataTables.min.css" rel="stylesheet" />
+
 <div class="container">
     <div class="row header" style="text-align:center;color:green">
         <h2>All Countries</h2>
@@ -70,8 +72,6 @@
     </table>
 </div>
 
-<link href="~/Scripts/DataTables-1.12.1/css/jquery.dataTables.min.css" rel="stylesheet" />
-
 
 @section scripts{
     <script src="~/Scripts/DataTables-1.12.1/js/jquery.dataTables.min.js"></script>
@@ -93,7 +93,7 @@
                         "autoWidth": true,
                         "searchable": true,
                         "render": function (data, type, row, meta) {
-                            return '<a href="#" id ="nametag">' + data + '</a>';
+                            return '<a href="#" class="name">' + data + '</a>';
                         }
                     },
                     {
@@ -101,7 +101,7 @@
                         "autoWidth": true,
                         "searchable": true,
                         "render": function (data, type, row, meta) {
-                            return '<a href="#" id ="regiontag">' + data + '</a>';
+                            return '<a href="#" class="region">' + data + '</a>';
                         }
                     },
                     {
@@ -109,7 +109,7 @@
                         "autoWidth": true,
                         "searchable": true,
                         "render": function (data, type, row, meta) {
-                            return '<a href="#" id ="subregion">' + data + '</a>';
+                            return '<a href="#" class="subregion" value="Subregion">' + data + '</a>';
                         }
                     },
                 ],
@@ -124,14 +124,21 @@
         });
 
 
-        $('#fulltable').on('click', 'td', function () {
-            var table = $('#fulltable').DataTable();
-                var data = table.cell(this).data();
-                console.log(data);
-           
-            console.log("I am here..." + data);
+        $('#fulltable tbody').on('click', '.name', function () {
 
+           
+            var table = $('#fulltable').DataTable();
+            var tr = $(this).closest('tr');
+            var data = table.row(tr).data();
+
+            console.log(data);
+            
             $("#fulltable").hide();
+
+            $("#region").hide();    
+            
+            $("#subregion").hide();  
+            
             $("#countryInfo").show();           
 
             $("#countryInfo").DataTable({
@@ -139,9 +146,10 @@
                 "ajax": {
                     "url": "/Countries/GetCountryInfo",
                     "type": "POST",
-                    "data": { countryname: data },
+                    "data": { countryname: data.name },
                     "datatype": "json"
                 },
+               
                 "columns": [
 
                     {
@@ -160,12 +168,12 @@
                         "searchable": true
                     },
                     {
-                        "data": "currencies",
+                        "data": "currencies[, ].name",
                         "autoWidth": true,
                         "searchable": true
                     },
                     {
-                        "data": "languages",
+                        "data": "languages[, ].name",
                         "autoWidth": true,
                         "searchable": true
                     },
@@ -174,7 +182,7 @@
                         "autoWidth": true,
                         "searchable": true,
                         "render": function (data, type, row, meta) {
-                            return '<a href="' + data + '">' + data + '</a>';
+                            return '<a href="#" class="name">' + data + '</a>';
                         },
                     },
                 ],
@@ -188,32 +196,31 @@
           
             });
 
-        $('td regiontag').on('click', 'td', function () {
-            data = $('#fulltable').DataTable().cell(this).data();
+        $('#fulltable tbody').on('click', '.region', function () {
+            var table = $('#fulltable').DataTable();
+            var tr = $(this).closest('tr');
+            var data = table.row(tr).data();
+
             console.log(data);
+            
+            $("#fulltable").hide();
 
-            console.log("I am here..." + data);
+            $("#subregion").hide();
 
-            //$("#countryInfo").show();
-            //$("#fulltable").hide();
+            $("#region").show();     
 
-            $("#countryInfo").DataTable({
+            $("#region").DataTable({
 
                 "ajax": {
-                    "url": "/Countries/GetCountryInfo",
+                    "url": "/Countries/GetRegions",
                     "type": "POST",
-                    "data": { name: data },
+                    "data": { region: data.region },
                     "datatype": "json"
                 },
                 "columns": [
 
                     {
-                        "data": "name",
-                        "autoWidth": true,
-                        "searchable": true
-                    },
-                    {
-                        "data": "capital",
+                        "data": "region",
                         "autoWidth": true,
                         "searchable": true
                     },
@@ -222,25 +229,81 @@
                         "autoWidth": true,
                         "searchable": true
                     },
-                    ,
                     {
-                        "data": "currencies",
-                        "autoWidth": true,
-                        "searchable": true
-                    },
-                    {
-                        "data": "languages",
-                        "autoWidth": true,
-                        "searchable": true
-                    },
-                    {
-                        "data": "borders",
+                        "data": "name",
                         "autoWidth": true,
                         "searchable": true,
                         "render": function (data, type, row, meta) {
                             return '<a href="' + data + '">' + data + '</a>';
                         },
                     },
+                    {
+                        "data": "subregion",
+                        "autoWidth": true,
+                        "searchable": true,
+                        "render": function (data, type, row, meta) {
+                            return '<a href="' + data + '">' + data + '</a>';
+                        },
+                    },
+                    
+                ],
+
+                "order": [0, "asc"],
+                "processing": "true",
+                "language": {
+                    "processing": "processing... please wait"
+                }
+            });
+            console.log(data)
+        });
+
+        $('#fulltable tbody').on('click', '.subregion', function () {
+            var table = $('#fulltable').DataTable();
+            var data = table.cell(this).data();
+
+            $("#fulltable").hide();
+
+            $("#subregion").hide();
+
+            $("#subregion").show();
+
+            $("#subregion").DataTable({
+
+                "ajax": {
+                    "url": "/Countries/GetSubregions",
+                    "type": "POST",
+                    "data": { subregion: data },
+                    "datatype": "json"
+                },
+                "columns": [
+
+                    {
+                        "data": "subregion",
+                        "autoWidth": true,
+                        "searchable": true
+                    },
+                    {
+                        "data": "population",
+                        "autoWidth": true,
+                        "searchable": true
+                    },
+                    {
+                        "data": "region",
+                        "autoWidth": true,
+                        "searchable": true,
+                        "render": function (data, type, row, meta) {
+                            return '<a href="' + data + '">' + data + '</a>';
+                        },
+                    },
+                    {
+                        "data": "name",
+                        "autoWidth": true,
+                        "searchable": true,
+                        "render": function (data, type, row, meta) {
+                            return '<a href="' + data + '">' + data + '</a>';
+                        },
+                    },
+
                 ],
 
                 "order": [0, "asc"],
@@ -250,6 +313,7 @@
                 }
             });
         });
+
     </script>
 
 

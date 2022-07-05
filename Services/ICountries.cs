@@ -10,6 +10,5 @@ namespace CountriesOftheWorld.Services
     public interface ICountries
     {
         Task<List<CountryInfo>> GetCountryListAsync();
-        Task<List<CountryInfo>> GetCountryInfoAsync(string name);
     }
 }

@@ -5,7 +5,7 @@ using System.Web;
 
 namespace CountriesOftheWorld.Models
 {
-    public class CountryInfo
+      public class CountryInfo
     {
      
             public string name { get; set; }

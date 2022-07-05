@@ -32,23 +32,6 @@ namespace CountriesOftheWorld.Services
           
         }
 
-        public async Task<List<CountryInfo>> GetCountryInfoAsync(string name)
-        {
-            try
-            {
-                var endpointUrl = ConfigurationManager.AppSettings["CountriesnameEndpoint"];
-                RestClient client = new RestClient(endpointUrl);
-                RestRequest request = new RestRequest();
-                IRestResponse response = await client.ExecuteAsync(request);
-                return JsonConvert.DeserializeObject<List<CountryInfo>>(response.Content);
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-
-        }
     }
 
 }

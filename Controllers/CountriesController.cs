@@ -33,7 +33,7 @@ namespace CountriesOftheWorld.Controllers
             if (HttpContext.Cache["AllCountries"] == null)
             {
                 countryList = await countries.GetCountryListAsync();
-                HttpContext.Cache.Insert("AllCountries", countryList, null, DateTime.Now.AddSeconds(30), TimeSpan.Zero);
+                HttpContext.Cache.Insert("AllCountries", countryList, null, DateTime.Now.AddDays(1), TimeSpan.Zero);
             }
             else
             {
@@ -75,16 +75,35 @@ namespace CountriesOftheWorld.Controllers
 
         public ActionResult GetRegions()
         {
-            string region = Request["region"];
+            string selectedregion = Request["region"];
 
             List<CountryInfo> countryList = new List<CountryInfo>();
 
             countryList = (List<CountryInfo>)HttpContext.Cache["AllCountries"];
 
             countryList = countryList.
-                       Where(x => x.name.ToLower().Contains(region.ToLower())).ToList();
+                       Where(x => x.region.ToLower().Contains(selectedregion.ToLower())).ToList();
 
-            return Json(new { data = countryList, draw = Request["draw"] }, JsonRequestBehavior.AllowGet);
+            //To get the sum of the population in the selected region
+            int RegionPopulation = countryList.Sum(x => x.population);
+
+            RegionInfo region = new RegionInfo();
+
+            region.population = RegionPopulation;
+
+            // this will return the selected region
+            region.region = countryList.FirstOrDefault(x => x.region == selectedregion).ToString();
+
+            // this will return a list containing all countries in the region
+            region.name = countryList.Where(x => x.region.ToLower().Contains(selectedregion.ToLower()))
+                .Select(x => x.name).Distinct().ToList();
+
+            // this will return a list containing all subregions in the region
+            region.subregion = countryList.Where(x => x.region.ToLower().Contains(selectedregion.ToLower()))
+                .Select(x => x.subregion).Distinct().ToList();
+
+
+            return Json(new { data = region, draw = Request["draw"] }, JsonRequestBehavior.AllowGet);
 
         }
 
@@ -97,7 +116,7 @@ namespace CountriesOftheWorld.Controllers
             countryList = (List<CountryInfo>)HttpContext.Cache["AllCountries"];
 
             countryList = countryList.
-                       Where(x => x.name.ToLower().Contains(subregion.ToLower())).ToList();
+                       Where(x => x.subregion.ToLower().Contains(subregion.ToLower())).ToList();
 
             return Json(new { data = countryList, draw = Request["draw"] }, JsonRequestBehavior.AllowGet);
 
