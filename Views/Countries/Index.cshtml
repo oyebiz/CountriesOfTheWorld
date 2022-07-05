@@ -55,21 +55,6 @@
         </tbody>
     </table>
 
-    <table class="table table-striped table-bordered " style="width:100%; display: none" id="subregion">
-
-        <thead>
-            <tr>
-                <th>Subregion Name</th>
-                <th>Population</th>
-                <th>Region Name</th>
-                <th>Countries</th>
-            </tr>
-        </thead>
-        <tbody>
-
-
-        </tbody>
-    </table>
 </div>
 
 
@@ -113,7 +98,7 @@
                         }
                     },
                 ],
-
+                "pagingType": 'full_numbers',
                 "order": [0, "asc"],
                 "processing": "true",
                 "language": {
@@ -123,7 +108,6 @@
 
         });
 
-
         $('#fulltable tbody').on('click', '.name', function () {
 
            
@@ -131,8 +115,6 @@
             var tr = $(this).closest('tr');
             var data = table.row(tr).data();
 
-            console.log(data);
-            
             $("#fulltable").hide();
 
             $("#region").hide();    
@@ -145,7 +127,7 @@
 
                 "ajax": {
                     "url": "/Countries/GetCountryInfo",
-                    "type": "POST",
+                    "type": "GET",
                     "data": { countryname: data.name },
                     "datatype": "json"
                 },
@@ -201,11 +183,7 @@
             var tr = $(this).closest('tr');
             var data = table.row(tr).data();
 
-            console.log(data);
-            
             $("#fulltable").hide();
-
-            $("#subregion").hide();
 
             $("#region").show();     
 
@@ -213,14 +191,15 @@
 
                 "ajax": {
                     "url": "/Countries/GetRegions",
-                    "type": "POST",
+                    "type": "GET",
                     "data": { region: data.region },
-                    "datatype": "json"
+                    "datatype": "json"                  
                 },
+               
                 "columns": [
 
                     {
-                        "data": "region",
+                        "data": "regionname",
                         "autoWidth": true,
                         "searchable": true
                     },
@@ -247,71 +226,14 @@
                     },
                     
                 ],
-
+                
                 "order": [0, "asc"],
                 "processing": "true",
                 "language": {
                     "processing": "processing... please wait"
                 }
             });
-            console.log(data)
-        });
-
-        $('#fulltable tbody').on('click', '.subregion', function () {
-            var table = $('#fulltable').DataTable();
-            var data = table.cell(this).data();
-
-            $("#fulltable").hide();
-
-            $("#subregion").hide();
-
-            $("#subregion").show();
-
-            $("#subregion").DataTable({
-
-                "ajax": {
-                    "url": "/Countries/GetSubregions",
-                    "type": "POST",
-                    "data": { subregion: data },
-                    "datatype": "json"
-                },
-                "columns": [
-
-                    {
-                        "data": "subregion",
-                        "autoWidth": true,
-                        "searchable": true
-                    },
-                    {
-                        "data": "population",
-                        "autoWidth": true,
-                        "searchable": true
-                    },
-                    {
-                        "data": "region",
-                        "autoWidth": true,
-                        "searchable": true,
-                        "render": function (data, type, row, meta) {
-                            return '<a href="' + data + '">' + data + '</a>';
-                        },
-                    },
-                    {
-                        "data": "name",
-                        "autoWidth": true,
-                        "searchable": true,
-                        "render": function (data, type, row, meta) {
-                            return '<a href="' + data + '">' + data + '</a>';
-                        },
-                    },
-
-                ],
-
-                "order": [0, "asc"],
-                "processing": "true",
-                "language": {
-                    "processing": "processing... please wait"
-                }
-            });
+          
         });
 
     </script>

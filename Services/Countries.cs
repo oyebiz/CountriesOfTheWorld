@@ -18,9 +18,11 @@ namespace CountriesOftheWorld.Services
         {
             try
             {
+                //Get countries api from webconfig
                 var endpointUrl = ConfigurationManager.AppSettings["CountriesEndpoint"];
                 RestClient client = new RestClient(endpointUrl);
                 RestRequest request = new RestRequest();
+                //Execute api
                 IRestResponse response = await client.ExecuteAsync(request);
                 return JsonConvert.DeserializeObject<List<CountryInfo>>(response.Content);
             }

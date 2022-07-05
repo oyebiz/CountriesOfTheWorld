@@ -1,5 +1,6 @@
 ﻿using CountriesOftheWorld.Models;
 using CountriesOftheWorld.Services;
+using Newtonsoft.Json;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -23,38 +24,22 @@ namespace CountriesOftheWorld.Controllers
         // GET: Countries
         public async Task<ActionResult> GetCountries()
         {
-            int start = Convert.ToInt32(Request["start"]);
-            int length = Convert.ToInt32(Request["length"]);
-            string searchValue = Request["search[value]"];
-            string sortColumnName = Request["columns[" + Request["order[0][column]"] + "][name]"];
-            string sortDirection = Request["order[0][dir]"];
             List<CountryInfo> countryList = new List<CountryInfo>();
 
+            //Check if there is data stored in the cache
             if (HttpContext.Cache["AllCountries"] == null)
             {
+                //Get the list from the api
                 countryList = await countries.GetCountryListAsync();
                 HttpContext.Cache.Insert("AllCountries", countryList, null, DateTime.Now.AddDays(1), TimeSpan.Zero);
             }
             else
             {
+                //If there is data saved in the cache, store it in the list
                 countryList = (List<CountryInfo>)HttpContext.Cache["AllCountries"];
             }
-            
-            int totalrows = countryList.Count;
 
-            if (!string.IsNullOrEmpty(searchValue))//filter
-            {
-                countryList = countryList.
-                        Where(x => x.name.ToLower().Contains(searchValue.ToLower()) || x.region.ToLower().Contains(searchValue.ToLower()) || x.subregion.ToLower().Contains(searchValue.ToLower())).ToList();
-            }
-
-            int totalrowsafterfiltering = countryList.Count;
-
-            //sorting
-            countryList = countryList.OrderBy(s => sortColumnName).ToList();
-
-
-            return Json(new { data = countryList, draw = Request["draw"], recordsTotal = totalrows, recordsFiltered = totalrowsafterfiltering }, JsonRequestBehavior.AllowGet);
+            return Json(new { data = countryList, draw = Request["draw"] }, JsonRequestBehavior.AllowGet);
 
         }
 
@@ -64,8 +49,10 @@ namespace CountriesOftheWorld.Controllers
 
             List<CountryInfo> countryList = new List<CountryInfo>();
 
+            //Store data from cache to list 
             countryList = (List<CountryInfo>)HttpContext.Cache["AllCountries"];
 
+            //Query the list yo get only informatio about the selected country
             countryList = countryList.
                        Where(x => x.name.ToLower().Contains(countryname.ToLower())).ToList();
 
@@ -79,20 +66,22 @@ namespace CountriesOftheWorld.Controllers
 
             List<CountryInfo> countryList = new List<CountryInfo>();
 
+            //Store data from cache to list
             countryList = (List<CountryInfo>)HttpContext.Cache["AllCountries"];
-
+           
+            //Query the list yo get only informatio about the selected country
             countryList = countryList.
                        Where(x => x.region.ToLower().Contains(selectedregion.ToLower())).ToList();
 
-            //To get the sum of the population in the selected region
-            int RegionPopulation = countryList.Sum(x => x.population);
-
             RegionInfo region = new RegionInfo();
+
+            //To get the sum of the population in the selected region
+            int RegionPopulation = countryList.Sum(x => x.population);          
 
             region.population = RegionPopulation;
 
             // this will return the selected region
-            region.region = countryList.FirstOrDefault(x => x.region == selectedregion).ToString();
+            region.regionname = selectedregion;
 
             // this will return a list containing all countries in the region
             region.name = countryList.Where(x => x.region.ToLower().Contains(selectedregion.ToLower()))
@@ -102,24 +91,11 @@ namespace CountriesOftheWorld.Controllers
             region.subregion = countryList.Where(x => x.region.ToLower().Contains(selectedregion.ToLower()))
                 .Select(x => x.subregion).Distinct().ToList();
 
+           var regionList = JsonConvert.SerializeObject(region);
 
-            return Json(new { data = region, draw = Request["draw"] }, JsonRequestBehavior.AllowGet);
-
-        }
-
-        public ActionResult GetSubregions()
-        {
-            string subregion = Request["subregion"];
-
-            List<CountryInfo> countryList = new List<CountryInfo>();
-
-            countryList = (List<CountryInfo>)HttpContext.Cache["AllCountries"];
-
-            countryList = countryList.
-                       Where(x => x.subregion.ToLower().Contains(subregion.ToLower())).ToList();
-
-            return Json(new { data = countryList, draw = Request["draw"] }, JsonRequestBehavior.AllowGet);
+            return Json(new { data = regionList, draw = Request["draw"] }, JsonRequestBehavior.AllowGet);
 
         }
+
     }
 }
