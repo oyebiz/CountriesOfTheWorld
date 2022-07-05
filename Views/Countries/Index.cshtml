@@ -119,8 +119,6 @@
 
             $("#region").hide();    
             
-            $("#subregion").hide();  
-            
             $("#countryInfo").show();           
 
             $("#countryInfo").DataTable({
@@ -184,6 +182,8 @@
             var data = table.row(tr).data();
 
             $("#fulltable").hide();
+
+            $("#countryInfo").hide();     
 
             $("#region").show();     
 
